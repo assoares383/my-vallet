@@ -6,9 +6,9 @@ import HistoryFinanceCard from '../../components/HistoryFinanceCard';
 
 import gains from '../../repositories/gains';
 import expenses from '../../repositories/expenses';
+
 import formatCurrency from '../../utils/formatCurrency';
 import formatDate from '../../utils/formatDate';
-
 
 import { Container, Content, Filters } from './styles';
 interface IRouteParams {
@@ -30,6 +30,10 @@ interface IData {
 
 const List: React.FC<IRouteParams> = ({ match }) => {
   const [data, setData] = useState<IData[]>([]);
+  const [monthSelected, setMonthSelected] = 
+    useState<string>(String(new Date().getMonth() + 1));
+  const [yearSelected, setYearSelected] = 
+    useState<string>(String(new Date().getFullYear()));
   
   const { type } = match.params;
 
@@ -46,14 +50,6 @@ const List: React.FC<IRouteParams> = ({ match }) => {
   }, [])
 
   const months = [
-    {
-      value: 11,
-      label: 'Novembro'
-    },
-    {
-      value: 12,
-      label: 'Dezembro'
-    },
     {
       value: 1,
       label: 'Janeiro'
@@ -73,6 +69,34 @@ const List: React.FC<IRouteParams> = ({ match }) => {
     {
       value: 5,
       label: 'Maio'
+    },
+    {
+      value: 6,
+      label: 'Junho'
+    },
+    {
+      value: 7,
+      label: 'Julho'
+    },
+    {
+      value: 8,
+      label: 'Agosto'
+    },
+    {
+      value: 9,
+      label: 'Setembro'
+    },
+    {
+      value: 10,
+      label: 'Outubro'
+    },
+    {
+      value: 11,
+      label: 'Novembro'
+    },
+    {
+      value: 12,
+      label: 'Dezembro'
     }
   ]
 
@@ -92,24 +116,44 @@ const List: React.FC<IRouteParams> = ({ match }) => {
   ]
 
   useEffect(() => {
-    const response = listData.map(item => {
+    const filteredData = listData.filter(item => {
+      const date = new Date(item.date);
+      const month = String(date.getMonth() + 1);
+      const year = String(date.getFullYear());
+
+      return month === monthSelected && year === yearSelected;
+    });
+
+    const formattedData = filteredData.map(item => {
       return {
-        id: String(Math.random() * data.length),
+        id: String(new Date().getTime()) + item.amount,
         description: item.description,
         amountFormatted: formatCurrency(Number(item.amount)),
         frequancy: item.frequency,
         dataFormatted: formatDate(item.date),
         tagColor: item.frequency === 'recorrente' ? '#4E41F0' : '#E44C4E'
       }
-    })
-    setData(response);
-  }, [])
+      
+    });
+
+    setData(formattedData);
+  }, [listData, monthSelected, yearSelected, data.length])
 
   return (
     <Container>
       <ContentHeader title={title} lineColor={lineColor}>
-        <SelectInput options={months} />
-        <SelectInput options={years} />
+        <SelectInput 
+          options={months} 
+          defaultValue={monthSelected}
+          onChange={(e) => 
+            setMonthSelected(e.target.value)} 
+        />
+        <SelectInput 
+          options={years} 
+          defaultValue={yearSelected}
+          onChange={(e) => 
+            setYearSelected(e.target.value)} 
+        />
       </ContentHeader> 
 
       <Filters>
